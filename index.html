@@ -1474,74 +1474,24 @@ Ana López"></textarea>
         // LA TINTA - VERCEL + GOOGLE SHEETS API
         // ========================================
         
-        // CONFIGURACIÓN - El usuario debe completar esto
+        // CONFIGURACIÓN
         const CONFIG = {
-            SPREADSHEET_ID: '1a5GHoqm38xiWz_Zq97mvajx0lwL5a1sqEJ1-52l-5Ng',  
-            API_KEY: 'AIzaSyBDtoGgv0lpjEZSBdS-_JWVLeSpXGhY-Iw',  
+            SPREADSHEET_ID: '1a5GHoqm38xiWz_Zq97mvajx0lwL5a1sqEJ1-52l-5Ng',
+            API_KEY: 'AIzaSyBDtoGgv0lpjEZSBdS-_JWVLeSpXGhY-Iw',
             SHEET_NAME: 'Estudiantes'
         };
         
         let allData = [];
-        
+        const DIAS_SEMANA = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
         
         // Cargar datos al iniciar
         window.onload = function() {
-            if (!validarConfiguracion()) {
-                mostrarPanelConfiguracion();
-            } else {
-                cargarDatosDesdeGoogleSheets();
-            }
+            cargarDatosDesdeGoogleSheets();
         };
         
-        function validarConfiguracion() {
-            return CONFIG.SPREADSHEET_ID !== 'TU_SPREADSHEET_ID_AQUI' && 
-                   CONFIG.API_KEY !== 'TU_API_KEY_AQUI';
-        }
-        
-        function mostrarPanelConfiguracion() {
-            const mensaje = `
-                <div style="max-width: 800px; margin: 50px auto; padding: 40px; background: white; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-                    <h2 style="color: #667eea;">⚙️ Configuración Requerida</h2>
-                    <p style="font-size: 16px; line-height: 1.6;">Para usar el sistema, necesitas configurar:</p>
-                    
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <h3>1. API Key de Google</h3>
-                        <ol style="line-height: 1.8;">
-                            <li>Ve a: <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
-                            <li>Crea un proyecto nuevo</li>
-                            <li>Habilita "Google Sheets API"</li>
-                            <li>Crea credenciales → API Key</li>
-                            <li>Copia tu API Key</li>
-                        </ol>
-                    </div>
-                    
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <h3>2. ID de tu Google Sheet</h3>
-                        <ol style="line-height: 1.8;">
-                            <li>Abre tu Google Sheet</li>
-                            <li>Copia el ID de la URL (entre /d/ y /edit)</li>
-                            <li>Ejemplo: docs.google.com/spreadsheets/d/<strong>ABC123XYZ</strong>/edit</li>
-                        </ol>
-                    </div>
-                    
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <h3>3. Configurar en el código</h3>
-                        <p>Edita el archivo <code>index.html</code> y reemplaza:</p>
-                        <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto;">
-SPREADSHEET_ID: 'TU_ID_AQUI',
-API_KEY: 'TU_API_KEY_AQUI'</pre>
-                    </div>
-                    
-                    <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
-                        <strong>⚠️ Importante:</strong> Tu Google Sheet debe estar compartido como "Cualquier persona con el enlace puede ver"
-                    </div>
-                </div>
-            `;
-            document.body.innerHTML = mensaje;
-        }
-        
         async function cargarDatosDesdeGoogleSheets() {
-            mostrarCargando(true);
+            const loading = document.getElementById('loading');
+            if (loading) loading.style.display = 'flex';
             
             try {
                 const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SPREADSHEET_ID}/values/${CONFIG.SHEET_NAME}?key=${CONFIG.API_KEY}`;
@@ -1572,29 +1522,13 @@ API_KEY: 'TU_API_KEY_AQUI'</pre>
                 
                 console.log(`✅ ${allData.length} registros cargados`);
                 initializeApp();
-                mostrarCargando(false);
+                if (loading) loading.style.display = 'none';
                 
             } catch (error) {
                 console.error('Error:', error);
-                mostrarCargando(false);
-                alert('❌ Error al cargar datos: ' + error.message + '\n\nVerifica tu configuración.');
+                if (loading) loading.style.display = 'none';
+                alert('❌ Error al cargar datos: ' + error.message);
             }
-        }
-        
-        function mostrarCargando(mostrar) {
-            const loading = document.getElementById('loading');
-            if (loading) {
-                loading.style.display = mostrar ? 'flex' : 'none';
-            }
-        }
-        
-        async function guardarEnGoogleSheets() {
-            alert('ℹ️ Google Sheets API (solo lectura en versión gratuita)\n\n' +
-                  'Para guardar cambios:\n' +
-                  '1. Click en "💾 Descargar Excel"\n' +
-                  '2. Sube el archivo a Google Drive\n' +
-                  '3. Importa a tu Google Sheet (Archivo → Importar)\n\n' +
-                  'Esto reemplazará los datos anteriores.');
         }
 
         
@@ -1608,7 +1542,65 @@ API_KEY: 'TU_API_KEY_AQUI'</pre>
             });
         }
 
-        
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        function initializeApp() {
+            try {
+                populateFilters();
+                generateCalendar();
+                generateStats();
+                applyFilters();
+                checkUnassigned();
+                checkFullGroups();
+                checkIncompatibilidades();
+                showAllStudents();
+                showAllGroups();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Modales
+        function openNewStudentModal() { document.getElementById('newStudentModal').style.display = 'block'; }
+        function closeNewStudentModal() { document.getElementById('newStudentModal').style.display = 'none'; document.getElementById('newStudentForm').reset(); }
+        function openNewGroupModal() { document.getElementById('newGroupModal').style.display = 'block'; }
+        function closeNewGroupModal() { document.getElementById('newGroupModal').style.display = 'none'; document.getElementById('newGroupForm').reset(); }
+        function openEditStudentModal() { document.getElementById('editStudentModal').style.display = 'block'; }
+        function closeEditStudentModal() { document.getElementById('editStudentModal').style.display = 'none'; }
+        function openUpdateModal() { document.getElementById('updateModal').style.display = 'block'; }
+        function closeUpdateModal() { document.getElementById('updateModal').style.display = 'none'; }
+
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Alta estudiante
+        document.getElementById('newStudentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newStudent = {
+                'Unnamed: 0': allData.length + 1,
+                'Profesor': document.getElementById('altaProfesor').value,
+                'Sala': document.getElementById('altaSala').value,
+                'Nivel': document.getElementById('altaNivel').value,
+                'TIPO': document.getElementById('altaTipo').value,
+                'Días': document.getElementById('altaDias').value,
+                'Horas': document.getElementById('altaHoras').value,
+                'Alumnos': document.getElementById('altaAlumno').value,
+                'Confirmado': document.getElementById('altaConfirmado').value,
+                'Pagado': document.getElementById('altaPagado').value,
+                'E-mail': document.getElementById('altaEmail').value,
+                'Teléfono': document.getElementById('altaTelefono').value,
+                'Activo': document.getElementById('altaActivo').value
+            };
+
+            allData.push(newStudent);
+            initializeApp();
+            closeNewStudentModal();
+            alert(`✅ Estudiante dado de alta: ${newStudent.Alumnos}`);
+        });
 
         // Alta grupo
         document.getElementById('newGroupForm').addEventListener('submit', function(e) {
