@@ -1469,12 +1469,52 @@ Ana López"></textarea>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
+        // ========================================
+        // PROTECCIÓN CON CONTRASEÑA
+        // ========================================
+        (function() {
+            const CONTRASENA_CORRECTA = "LaTinta2026@";  
+            
+            // Verificar si ya está autenticado en esta sesión
+            if (sessionStorage.getItem('autenticado') !== 'true') {
+                let intentos = 0;
+                let acceso = false;
+                
+                while (intentos < 3 && !acceso) {
+                    const password = prompt("🔒 Acceso Restringido\n\nIngresa la contraseña:");
+                    
+                    if (password === null) {
+                        // Usuario canceló
+                        alert("❌ Acceso denegado");
+                        window.location.href = "https://www.google.com";
+                        return;
+                    }
+                    
+                    if (password === CONTRASENA_CORRECTA) {
+                        acceso = true;
+                        sessionStorage.setItem('autenticado', 'true');
+                        console.log("✅ Acceso autorizado");
+                    } else {
+                        intentos++;
+                        if (intentos < 3) {
+                            alert(`❌ Contraseña incorrecta. Intentos restantes: ${3 - intentos}`);
+                        } else {
+                            alert("❌ Demasiados intentos fallidos. Acceso denegado.");
+                            window.location.href = "https://www.google.com";
+                            return;
+                        }
+                    }
+                }
+            }
+        })();
+        
+
         let allData = [];
         
         // Configuración de Google Sheets
         const CONFIG = {
-            SPREADSHEET_ID: '1a5GHoqm38xiWz_Zq97mvajx0lwL5a1sqEJ1-52l-5Ng',
-            API_KEY: 'AIzaSyAciJJvheIBoYATIKlykKfWcmue_Psul4Q',
+            SPREADSHEET_ID: '1aSGHoqm38wWz_Zq97mvgyi0iwLSa1sqEJ1-52f-5Ng',
+            API_KEY: 'TU_NUEVA_API_KEY_AQUI',
             SHEET_NAME: 'Estudiantes'
         };
         
